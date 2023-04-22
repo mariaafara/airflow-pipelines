@@ -1,0 +1,3 @@
+[submodule "airflow-server"]
+	path = airflow-server
+	url = git@personal:mariaafara/airflow-practice.git
