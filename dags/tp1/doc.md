@@ -1,4 +1,15 @@
-# dag1:
+# TP1
+
+Create a DAG that generates random data and uploads it to an S3 bucket using the PythonOperator. The purpose of this
+exercise is to practice using a Python callable to perform a specific task, and to learn how to interact with an
+external service such as an S3 bucket using an Airflow hook.
+
+Create another DAG that waits for a file to appear in an S3 bucket using the S3KeySensor, then downloads and prints the
+contents of the file using the PythonOperator. The purpose of this exercise is to practice using a sensor to wait for a
+specific event to occur before triggering downstream tasks, and to learn how to download files from an S3 bucket using
+an Airflow hook.
+
+## dag1:
 
 This dag generates random data and writes it to a file, waits for a random amount of time, and then uploads
 the file to an **S3 bucket**. The DAG is scheduled to run every 5 minutes, making this a **simple data generation and
@@ -46,7 +57,7 @@ to specify the name of the S3 bucket where the data will be stored.
   method). The tempfile module provides a simple way to create and delete temporary files without worrying about naming
   conflicts or file cleanup.
 
-# dag2
+## dag2
 
 This dag waits for a specific S3 object to be available in the S3 bucket, downloads the object to a local
 file, and prints its contents to the console. The DAG is scheduled to run every 5 minutes, making this a simple data
@@ -61,7 +72,8 @@ key name, AWS connection ID, and poke interval. **The mode is set to "reschedule
 continuously check for the existence of the specified S3 object until it is available.**
 
 The DAG task "load_data" uses the PythonOperator to execute the Python function named "load_data". The function takes in
-a single argument - a string called **"key" - that specifies the S3 object key to download and print**. The function imports
+a single argument - a string called **"key" - that specifies the S3 object key to download and print**. The function
+imports
 the S3Hook class from the airflow.providers.amazon.aws.hooks.s3 module and creates an instance of it using the AWS
 connection ID "minio_conn". It then uses the S3Hook instance to download the S3 object specified by the "key" argument
 to a local file at "/tmp". The function then opens the local file and prints its contents to the console.
