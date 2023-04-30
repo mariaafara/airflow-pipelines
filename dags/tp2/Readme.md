@@ -64,7 +64,7 @@ authentication parameters such as a username and password.
 
 Once you have created the SMTP connection, reference it in your DAGs by providing its connection ID to the
 EmailOperator. This ensures that your email notifications are sent securely and using the correct connection parameters.
-![gmail_cnx.png](gmail_cnx.png)
+![gmail_cnx.png](images/gmail_cnx.png)
 
 ### SMTP Provider
 
@@ -77,14 +77,14 @@ To create an app password for your SMTP connection, you need to have 2-step auth
 app](https://myaccount.google.com/two-step-verification/authenticator) created to get verification codes from it.
 
 Then, you can generate a new app password for your SMTP connection by doing the following steps:
-![app_passwords.png](app_passwords.png)
+![app_passwords.png](images/app_passwords.png)
 
 - [Go to Google account -> security -> app passwords](https://myaccount.google.com/apppasswords)
 - Select Mail app and choose other (Custom name) as the device and name it airflow for example.
 - Once you click generate, an app password is created and you must immediately copy it and add it to your SMTP
   connection password field as it will disappear afterwards.
 
-![password_example.png](password_example.png)
+![password_example.png](images/password_example.png)
 
 ## Future Improvements
 
