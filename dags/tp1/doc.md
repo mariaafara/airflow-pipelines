@@ -82,3 +82,14 @@ The script also defines two global variables - "BUCKET_NAME" and "KEY_NAME". "BU
 bucket where the data is stored, and "KEY_NAME" specifies the path to the S3 object. The path contains placeholders for
 the current execution date and time, which are filled in by Airflow at runtime.
 
+----
+## Dags Operators used: 
+
+- PythonOperator:
+- S3KeySensor: 
+
+## minio_conn
+
+
+go to admin -> connection -> new connection -> choose aws -> .....
+name it minio_conn -> use id and key added in the airflow-server/docker-compose of minio
