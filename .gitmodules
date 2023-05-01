@@ -1,4 +1,3 @@
 [submodule "airflow-server"]
 	path = airflow-server
 	url = git@github.com:mariaafara/airflow-practice.git
-    branch = update-server
