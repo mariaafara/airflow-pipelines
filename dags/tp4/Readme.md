@@ -1,0 +1,53 @@
+# TP4
+
+The purpose of this exercise is to demonstrate the use of Airflow task groups and decorators in creating DAGs. It also
+shows how tasks can take inputs from other tasks and how sub-tasks can be used within task groups.
+
+## decorators_dag
+
+This Dag uses the `@dag` decorator. The DAG runs once
+every minute using the `schedule` parameter and starts from yesterday using the `start_date` parameter. The `catchup`
+parameter is set to False, which means that Airflow won't try to execute any missed DAG runs.
+
+The DAG contains two tasks: `get_data` and `my_task_group`. `get_data` is a Python function that generates a list of
+integers from 0 to 9 and returns it. This function is decorated with the `@task` decorator, which makes it an Airflow
+task.
+
+The `my_task_group` task is a **task group** that takes in the output of `get_data` as input. It contains two
+sub-tasks: `task1` and `task2`. Both sub-tasks are Python functions decorated with the `@task` decorator, which makes
+them Airflow tasks. `task1` takes the first element of the input list and prints it to the console, then returns
+it. `task2` simply returns the entire input list.
+
+The `my_task_group` function returns the output of `task2`, which is the entire input list. This output is then passed
+to `my_task_group` as input.
+
+Finally, the `my_dag` function calls the `my_dag` DAG to create an instance of the DAG.
+
+![img.png](img.png)
+
+---
+
+## decorators_dag_with_expand
+
+This DAG demonstrates the use of dynamic mapping and parameterization in Airflow DAGs. It also shows how tasks can take
+inputs from other tasks and how sub-tasks can be used within task groups.
+
+When the DAG is executed, it retrieves a list of data to process from the `params` dictionary of the DAG run's context
+using the `get_data` task. This input data is then passed as input to the `my_task_group` task group, which consists of
+two sub-tasks: `task1` and `task2`. `task1` multiplies each item in the input data by 2, while `task2` adds 2 to each
+item.
+
+The `my_task_group` function uses the `expand` method of the `@task` decorator to create multiple instances of `task1`
+for each item in the input data list. The output of `task1` (a list of doubled data) is then passed as input to `task2`,
+which returns a list of data with 2 added to each item.
+
+The final output of `my_task_group` (the list of data with 2 added to each item) is then returned as the final output of
+the DAG.
+
+Important details to note include the use of the `@task` and `@task_group` decorators to define tasks and task groups,
+the use of dynamic mapping to create multiple instances of `task1`, and the use of parameterization to pass data to the
+DAG at runtime. The scheduling and starting time of the DAG can also be customized using the `schedule` and `start_date`
+parameters of the `@dag` decorator.
+
+![img_1.png](img_1.png)
+![img_2.png](img_2.png)
