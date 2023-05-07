@@ -29,6 +29,10 @@ with DAG(
         mounts=[
             Mount(source=absolute_data_folder_path, target="/data", type="bind"),
         ],
+        # Specifies the files or directories on the host machine that should be accessible inside the Docker container.
+        environment={
+            'env_var': "an environment variable"
+        },  # Provides key-value pairs of environment variables to the Docker container.
     )
 
     # Define the second DockerOperator to run print_df.py

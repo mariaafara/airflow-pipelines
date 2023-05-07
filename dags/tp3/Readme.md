@@ -33,7 +33,9 @@ To get started, the following steps were taken:
 
 5. The task dependencies were set up so that print_df depends on create_df.
 
-6. The [apache-airflow-providers-docker](https://airflow.apache.org/docs/apache-airflow-providers-docker/stable/index.html)
+6.
+
+The [apache-airflow-providers-docker](https://airflow.apache.org/docs/apache-airflow-providers-docker/stable/index.html)
 package was added to the requirements.txt file to enable the DockerOperator.
 
 7. The [docker-socket-proxy service](https://github.com/Tecnativa/docker-socket-proxy) was added to the Docker Compose
@@ -41,10 +43,11 @@ package was added to the requirements.txt file to enable the DockerOperator.
    the Docker daemon.
 
 ---------
-Additional changes:
 
-- Store DATAFRAME CSV into a mounted folder 'data'
-- Use Mount type to mount the data folder to the containers used with DockerOperator.
+## Additional Changes:
+
+- Mounting a `data` folder as a bind mount to the container to store and load the DATAFRAME CSV.
+- Use **Mount** type to mount the data folder to the containers used with DockerOperator.mounts
 - To be able to mount a specific directory on your machine, you have to use an absolute path that is specific to your
   local machine, so you can define it as an airflow variable and access it within your Airflow DAG.
 - You can set the value of PROJECT_ABSOLUTE_PATH as an Airflow Variable through the Airflow UI or using the airflow
@@ -52,3 +55,16 @@ Additional changes:
   PROJECT_ABSOLUTE_PATH as key; /path/to/your/directory as value
 
 ![images/set_variable.png](images/set_variable.png)
+
+- Set environment variable env_var to the Docker image by passing it as a parameter to the DockerOperator.
+
+So the additional params added to the docker operators are:
+
+- mounts: A list of Mount objects that define the bind mount for the data folder. The source parameter is set to
+  absolute_data_folder_path, which is the absolute path to the data folder obtained from the Airflow Variable. The
+  target parameter is set as '/data', which represents the mount point inside the container.
+- environment: A dictionary of environment variables to pass to the Docker container. In this case, it includes a single
+  key-value pair, 'env_var': "an environment variable", where 'env_var' is the environment variable name and "an
+  environment variable" is the value.
+
+Remember to adjust the paths and configurations according to your specific setup.
