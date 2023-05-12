@@ -82,3 +82,5 @@ To summarize the main takeaways from this DAG:
 - Task dependencies within a task group can be defined using the `>>` operator to specify their execution order.
 - The DAG's start date, catch-up behavior, and scheduling interval can be customized using the corresponding parameters
   in the `@dag` decorator.
+
+## dynamic_task_mapping
