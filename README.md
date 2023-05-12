@@ -1,3 +1,5 @@
 ## Airflow pipeline Exercises
 
-### Readme is being drafted
+This repo hosts comprehensive collection of tutorials and examples for Apache Airflow operators and concepts.
+
+### Readme is being drafted...
