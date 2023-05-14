@@ -83,6 +83,8 @@ To summarize the main takeaways from this DAG:
 - The DAG's start date, catch-up behavior, and scheduling interval can be customized using the corresponding parameters
   in the `@dag` decorator.
 
+---- 
+
 ## task_group_example1.py
 
 This DAG demonstrates the following concepts:
@@ -140,6 +142,8 @@ The transformed values are passed as input to the load task, which prints the to
 
 ![img.png](images/task_group_dag.png)
 
+---- 
+
 ## task_group_mapping_example
 
 The purpose of this DAG is to showcase the usage of task groups and task mapping in Airflow.
@@ -191,3 +195,5 @@ The task_group1_object (mapped instances of task_group1) is set as a dependency 
 operator.
 
 ![img.png](images/task_group_mapping_example.png)
+
+---- 
