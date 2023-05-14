@@ -140,7 +140,7 @@ The transform_values task group is executed, taking the extracted data dictionar
 
 The transformed values are passed as input to the load task, which prints the total value and average value.
 
-![img.png](images/task_group_dag.png)
+![task_group_dag.png](images/task_group_dag.png)
 
 ---- 
 
@@ -194,6 +194,6 @@ The dependencies within the DAG are defined as follows:
 The task_group1_object (mapped instances of task_group1) is set as a dependency for the pull_xcom task using the >>
 operator.
 
-![img.png](images/task_group_mapping_example.png)
+![task_group_mapping_example.png](images/task_group_mapping_example.png)
 
 ---- 
