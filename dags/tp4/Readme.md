@@ -83,4 +83,111 @@ To summarize the main takeaways from this DAG:
 - The DAG's start date, catch-up behavior, and scheduling interval can be customized using the corresponding parameters
   in the `@dag` decorator.
 
-## dynamic_task_mapping
+## task_group_example1.py
+
+This DAG demonstrates the following concepts:
+
+- How to define tasks and task groups in Airflow.
+- How to pass data between tasks within a task group.
+- How to perform data extraction, transformation, and loading operations using Airflow tasks.
+
+The purpose of this DAG is to extract data, transform the extracted data by calculating the total value and average
+value, and then load the transformed values.
+
+### Operators and Functionalities
+
+The DAG includes the following operators and functionalities:
+
+extract_data: This operator is a Python function decorated as an Airflow task. It extracts data from a string in JSON
+format and returns it as a Python dictionary.
+
+transform_values: This operator is a task group, which allows grouping multiple tasks together. It takes the data_dict
+extracted from the previous task and performs two transformations on it: transform_sum and transform_avg.
+
+- transform_sum: This operator calculates the total value by summing all the values in the data_dict dictionary.
+
+- transform_avg: This operator calculates the average value by summing all the values in the data_dict dictionary and
+  dividing it by the number of elements in the dictionary.
+
+- load: This operator is a Python function decorated as an Airflow task. It takes the transformed values as input and
+  prints the total value and average value.
+
+### `task` `decorator` parameters mentioned:
+
+- `task_id`: This parameter specifies the unique identifier for the task. In the code, the task_id is set as a string
+  value,
+  such as "extract". The task_id is used to refer to the task and define dependencies between tasks.
+
+- `retries`: This parameter defines the number of times the task should be retried in case of failures. In the code, the
+  retries parameter is set to 2, which means that if the task fails, Airflow will automatically retry it two more times
+  before considering it as a failure.
+
+The names of the tasks are the names of the functions decorated with the task decorator.
+
+### Execution Flow
+
+The execution flow of the DAG is as follows:
+
+The extract_data task is executed first, which extracts the data from a JSON string and returns a dictionary.
+
+The transform_values task group is executed, taking the extracted data dictionary as input.
+
+- The transform_sum task is executed within the task group, which calculates the total value.
+
+- The transform_avg task is executed within the task group, which calculates the average value.
+
+The transformed values are passed as input to the load task, which prints the total value and average value.
+
+![img.png](images/task_group_dag.png)
+
+## task_group_mapping_example
+
+The purpose of this DAG is to showcase the usage of task groups and task mapping in Airflow.
+
+This DAG showcases the following concepts:
+
+How to define task groups using the task_group decorator.
+How to use task mapping to execute tasks with different inputs in parallel.
+How to retrieve and utilize XCom values from specific tasks using the xcom_pull method.
+
+### Operators and Functionalities
+
+The DAG includes the following operators and functionalities:
+
+task_group1: This operator is a task group created using the task_group decorator. It defines a group of tasks that
+share the same group ID.
+
+- `print_num`: This operator is a Python function decorated as an Airflow task. It takes a number as input and returns
+  the same number.
+
+- `add_25`: This operator is a Python function decorated as an Airflow task. It takes a number as input, adds 25 to it,
+  and returns the result.
+
+- `pull_xcom`: This operator is a Python function decorated as an Airflow task. It pulls the XCom values from a specific
+  task in the task group and prints them out. It utilizes the xcom_pull method to retrieve `XComs`.
+
+### Execution Flow
+
+The execution flow of the DAG is as follows:
+
+The task_group1 task group is executed. Within this task group, the print_num task is executed, followed by the add_25
+task. The my_num parameter is dynamically provided to the task group.
+
+The pull_xcom task is executed. It pulls the XCom values from the add_25 task within the task_group1 task group. It
+retrieves the XCom values from specific mapped task group instances using the map_indexes parameter.
+
+The map_indexes parameter is used in the code to specify the specific mapped task group instances from which to pull
+XCom values. It allows you to retrieve XCom values from specific instances of a task within a task group.
+
+### Task Mapping and Dependencies
+
+The code demonstrates the concept of task mapping, which allows for executing tasks with different inputs in parallel.
+In this case, six mapped task group instances of task_group1 are created with different my_num
+inputs: [5, 25, 35, 0, 10].
+
+The dependencies within the DAG are defined as follows:
+
+The task_group1_object (mapped instances of task_group1) is set as a dependency for the pull_xcom task using the >>
+operator.
+
+![img.png](images/task_group_mapping_example.png)
