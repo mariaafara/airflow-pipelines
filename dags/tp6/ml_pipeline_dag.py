@@ -1,10 +1,10 @@
 from airflow import DAG
-from airflow.operators.bash_operator import BashOperator
+from airflow.operators.bash import BashOperator
 from datetime import datetime, timedelta
 from airflow.operators.python import PythonOperator
 import random
-from airflow.operators.docker_operator import DockerOperator
-from airflow.operators.dummy_operator import DummyOperator
+from airflow.providers.docker.operators.docker import DockerOperator
+from airflow.operators.empty import EmptyOperator
 from airflow.operators.python import BranchPythonOperator
 
 default_args = {
@@ -84,7 +84,7 @@ def process_data(**context):
 with DAG('ml_pipeline_dag', default_args=default_args, schedule_interval=None,
          description='A simple Machine Learning pipeline') as dag:
     # Define a dummy task to skip data ingestion
-    skip_data_ingestion_task = DummyOperator(task_id="skip_data_ingestion_task")
+    skip_data_ingestion_task = EmptyOperator(task_id="skip_data_ingestion_task")
 
     check_s3_key_task = BranchPythonOperator(
         task_id="check_s3_key_task",
@@ -103,7 +103,8 @@ with DAG('ml_pipeline_dag', default_args=default_args, schedule_interval=None,
         image="ml_scripts_image",  # The name of the Docker image to use for the task.
         api_version="1.30",  # The version of the Docker API to use.
         auto_remove=False,  # Whether to automatically remove the container after it completes.
-        command=f"python scripts/model_training.py --s3_bucket {BUCKET_NAME} --s3_key tp6/ml_data/data.csv",
+        command=f"python scripts/model_training.py --s3_bucket {BUCKET_NAME} --s3_key tp6/ml_data/data.csv "
+                f"--exp_name simple_lr --model_name lr_model",
         # The command to run inside the container.
         # command="tail -f /dev/null",# he be khali lal container locked krml n2dr nfut 3l container n3ml debug (be samou alive)
         docker_url="tcp://docker-socket-proxy:2375",  # The URL of the Docker daemon to connect to.
@@ -112,9 +113,29 @@ with DAG('ml_pipeline_dag', default_args=default_args, schedule_interval=None,
         environment={
             "AWS_ACCESS_KEY_ID": "{{ conn.minio_conn.login }}",
             "AWS_SECRET_ACCESS_KEY": "{{ conn.minio_conn.password }}",
-
-        }
+            "MLFLOW_S3_ENDPOINT_URL": "http://minio:9000",
+        },
+        do_xcom_push=True,
+    )
+    register_stage_model_task = DockerOperator(
+        task_id=f"register_stage_model",
+        image="ml_scripts_image",  # The name of the Docker image to use for the task.
+        api_version="1.30",  # The version of the Docker API to use.
+        auto_remove=False,  # Whether to automatically remove the container after it completes.
+        command=f"python scripts/model_registering_staging.py --model_uri "
+                "{{ ti.xcom_pull(task_ids='train_model') }} --model_name lr_model",
+        # The command to run inside the container.
+        docker_url="tcp://docker-socket-proxy:2375",  # The URL of the Docker daemon to connect to.
+        network_mode="docker-compose_default",  # The network mode to use for the container.
+        trigger_rule="none_failed",
+        environment={
+            "AWS_ACCESS_KEY_ID": "{{ conn.minio_conn.login }}",
+            "AWS_SECRET_ACCESS_KEY": "{{ conn.minio_conn.password }}",
+            "MLFLOW_S3_ENDPOINT_URL": "http://minio:9000",
+        },
+        do_xcom_push=True,
     )
 
     # Set up task dependencies
-    check_s3_key_task >> [data_ingestion_task, skip_data_ingestion_task] >> train_model_task
+    check_s3_key_task >> [data_ingestion_task,
+                          skip_data_ingestion_task] >> train_model_task >> register_stage_model_task
