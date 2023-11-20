@@ -5,10 +5,43 @@ from sklearn.metrics import mean_squared_error
 import boto3
 from io import BytesIO
 import mlflow.sklearn
+from argparse import ArgumentParser
 
-if __name__ == "__main__":
-    from argparse import ArgumentParser
 
+def download_data_from_s3(s3_bucket, s3_key):
+    """
+    Download data from an S3 bucket and return it as a Pandas DataFrame.
+
+    Parameters:
+        s3_bucket (str): The name of the S3 bucket where the data is stored.
+        s3_key (str): The S3 key (path) to the data file in the bucket.
+
+    Returns:
+        pd.DataFrame: A Pandas DataFrame containing the downloaded data.
+    """
+    s3 = boto3.client("s3", endpoint_url="http://minio:9000")  # Use Minio server URL
+    response = s3.get_object(Bucket=s3_bucket, Key=s3_key)
+    data = pd.read_csv(BytesIO(response["Body"].read()))
+    return data
+
+
+def train_linear_regression_model(X, y):
+    """
+    Train a Linear Regression model using the provided features (X) and target (y).
+
+    Parameters:
+        X (pd.DataFrame): Features for training the model.
+        y (pd.Series): Target values for training the model.
+
+    Returns:
+        sklearn.linear_model.LinearRegression: Trained Linear Regression model.
+    """
+    model = LinearRegression()
+    model.fit(X, y)
+    return model
+
+
+if __name__ == "__main":
     parser = ArgumentParser()
     parser.add_argument(
         "--s3_bucket",
@@ -38,19 +71,14 @@ if __name__ == "__main__":
         dest="model_name",
         help="Model name.",
     )
-    # python scripts/model_training.py --s3_bucket airflow_bucket --s3_key tp6/ml_data/data.csv
+
     args = parser.parse_args()
 
     mlflow.set_tracking_uri("http://mlflow-server:5000")
     mlflow.set_experiment(args.exp_name)
 
-    # Initialize a connection to the S3 bucket
-    s3 = boto3.client("s3", endpoint_url="http://minio:9000")  # Replace with your Minio server URL
-    # Download the data from S3 into a pandas DataFrame
-    response = s3.get_object(Bucket=args.s3_bucket, Key=args.s3_key)
-    data = pd.read_csv(BytesIO(response["Body"].read()))
+    data = download_data_from_s3(args.s3_bucket, args.s3_key)
 
-    # Assuming your CSV has columns 'x' and 'y', you might do:
     X = data[['x']]
     y = data['y']
 
@@ -60,21 +88,20 @@ if __name__ == "__main__":
     with mlflow.start_run() as run1:
         params = {"positive": False, "n_jobs": None}
 
-        # Create and train a scikit-learn model (e.g., linear regression)
-        model = LinearRegression()
-        model.fit(X_train, y_train)
+        model = train_linear_regression_model(X_train, y_train)
 
         # Make predictions on the test set
         y_pred = model.predict(X_test)
-        # Calculate the Mean Squared Error (MSE) as an example of model evaluation
+        # Calculate the Mean Squared Error (MSE)
         mse = mean_squared_error(y_test, y_pred)
 
         mlflow.log_metric("mse", mse)
-        # track model parameters
+        # track parameters
         mlflow.log_params(model.get_params())
         predictions = model.predict(X_train)
 
-        logged_model = mlflow.sklearn.log_model(model, artifact_path=args.model_name)  # , registered_model_name="LRModel",signature=signature)
+        logged_model = mlflow.sklearn.log_model(model,
+                                                artifact_path=args.model_name)  # , registered_model_name="LRModel",signature=signature)
 
         # run_id = mlflow.active_run().info.run_id
         model_uri = logged_model.model_uri
